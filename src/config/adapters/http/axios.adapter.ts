@@ -12,7 +12,7 @@ export class AxiosAdapter implements HttpAdapter {
   constructor(options: Options) {
     this.axiosInstance = axios.create({
       baseURL: options.baseUrl,
-      params: options.params,
+      params: options.params
     });
   }
 

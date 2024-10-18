@@ -17,14 +17,14 @@ export const useMovies = () => {
 
   const initialLoad = async () => {
     const nowPlayingPromise = await UseCases.moviesNowPlayingUseCase(
-      movieDBFetcher,
+      movieDBFetcher
     );
     const popularPromise = await UseCases.moviesPopularUseCase(movieDBFetcher);
     const topRatedPromise = await UseCases.moviesTopRatedUseCase(
-      movieDBFetcher,
+      movieDBFetcher
     );
     const upcomingPromise = await UseCases.moviesUpComingUseCase(
-      movieDBFetcher,
+      movieDBFetcher
     );
 
     const [nowPlayingMovies, popularMovies, topRatedMovies, upComingMovies] =
@@ -32,7 +32,7 @@ export const useMovies = () => {
         nowPlayingPromise,
         popularPromise,
         topRatedPromise,
-        upcomingPromise,
+        upcomingPromise
       ]);
 
     setnowPlaying(nowPlayingMovies);
@@ -54,6 +54,6 @@ export const useMovies = () => {
     nowPlaying,
     popular,
     topRated,
-    upComing,
+    upComing
   };
 };

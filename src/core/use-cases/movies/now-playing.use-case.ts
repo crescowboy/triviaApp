@@ -4,12 +4,12 @@ import {MovieMapper} from '../../../infrastructure/mappers/movie.mapper';
 import type {Movie} from '../../entities/movie.entity';
 
 export const moviesNowPlayingUseCase = async (
-  fetcher: HttpAdapter,
+  fetcher: HttpAdapter
 ): Promise<Movie[]> => {
   try {
     const nowPlaying = await fetcher.get<NowPlayingResponse>('/now_playing');
     return nowPlaying.results.map(result =>
-      MovieMapper.fromMovieDBResultToEntity(result),
+      MovieMapper.fromMovieDBResultToEntity(result)
     );
   } catch (error) {
     console.error(error);
