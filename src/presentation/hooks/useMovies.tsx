@@ -4,6 +4,8 @@ import {Movie} from '../../core/entities/movie.entity';
 import * as UseCases from '../../core/use-cases';
 import {movieDBFetcher} from '../../config/adapters/movieDB.adapter';
 
+let popularPageNumber = 1;
+
 export const useMovies = () => {
   const [isLoding, setIsLoding] = useState(true);
   const [nowPlaying, setnowPlaying] = useState<Movie[]>([]);
@@ -54,6 +56,19 @@ export const useMovies = () => {
     nowPlaying,
     popular,
     topRated,
-    upComing
+    upComing,
+
+    //Methods
+    popularNextPage: async () => {
+      popularPageNumber++;
+      const popularMovies = await UseCases.moviesPopularUseCase(
+        movieDBFetcher,
+        {
+          page: popularPageNumber
+        }
+      );
+
+      setpopular(prev => [...prev, ...popularMovies]);
+    }
   };
 };
