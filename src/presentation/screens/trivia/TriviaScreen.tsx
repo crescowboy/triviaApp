@@ -32,25 +32,23 @@ const genreMap: {[key: number]: string} = {
   37: 'Western'
 };
 
-export const TriviaScreen = ({navigation}: any) => {
+export const TriviaScreen = ({navigation, route}: any) => {
+  const {category} = route.params;
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [timeLeft, setTimeLeft] = useState(10); // Estado para el temporizador
+  const [timeLeft, setTimeLeft] = useState(10);
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         const response = await movieDBFetcher.get('/popular');
         const movies = response.results;
-
-        // Mezclar películas
         const shuffledMovies = movies.sort(() => Math.random() - 0.5);
 
-        // Generar preguntas hasta alcanzar 10
         const generatedQuestions: any[] = [];
         let index = 0;
 
@@ -59,66 +57,86 @@ export const TriviaScreen = ({navigation}: any) => {
           index < shuffledMovies.length
         ) {
           const movie = shuffledMovies[index];
-          const questionType = Math.floor(Math.random() * 8); // Ahora hay 8 tipos de preguntas
-
+          const questionType = Math.floor(Math.random() * 4); // 0: year, 1: title, 2: language, 3: genre
           let question = null;
 
-          switch (questionType) {
-            case 0: // Pregunta sobre el año de estreno
-              question = {
-                question: `¿En qué año se estrenó esta película?`,
-                poster: movie.poster_path,
-                options: [
-                  movie.release_date.split('-')[0],
-                  (parseInt(movie.release_date.split('-')[0]) - 1).toString(),
-                  (parseInt(movie.release_date.split('-')[0]) + 1).toString(),
-                  (parseInt(movie.release_date.split('-')[0]) + 2).toString()
-                ].sort(() => Math.random() - 0.5),
-                answer: movie.release_date.split('-')[0]
-              };
-              break;
-            case 1: // Pregunta sobre el título
-              const otherMovies = shuffledMovies
-                .filter((m: any) => m.id !== movie.id)
-                .slice(0, 3) // Limitar a 3 títulos adicionales
-                .map((m: any) => m.title);
-              question = {
-                question: `¿Cuál es el título de esta película?`,
-                poster: movie.poster_path,
-                options: [movie.title, ...otherMovies].sort(
-                  () => Math.random() - 0.5
-                ),
-                answer: movie.title
-              };
-              break;
-            case 2: // Pregunta sobre el idioma original
-              question = {
-                question: `¿Cuál es el idioma original de esta película?`,
-                poster: movie.poster_path,
-                options: ['jp', 'es', 'fr', movie.original_language]
-                  .slice(0, 4)
-                  .sort(() => Math.random() - 0.5),
-                answer: movie.original_language
-              };
-              break;
-            case 3: // Pregunta sobre el género principal
-              const genreName = genreMap[movie.genre_ids[0]] || 'Desconocido'; // Obtén el nombre del género principal
-              const otherGenres = Object.values(genreMap)
-                .filter(genre => genre !== genreName) // Excluye el género correcto
-                .sort(() => Math.random() - 0.5)
-                .slice(0, 3); // Selecciona 3 géneros adicionales
+          const generateQuestion = (type: number) => {
+            switch (type) {
+              case 0:
+                return {
+                  question: `¿En qué año se estrenó esta película?`,
+                  poster: movie.poster_path,
+                  options: [
+                    movie.release_date.split('-')[0],
+                    (parseInt(movie.release_date.split('-')[0]) - 1).toString(),
+                    (parseInt(movie.release_date.split('-')[0]) + 1).toString(),
+                    (parseInt(movie.release_date.split('-')[0]) + 2).toString()
+                  ].sort(() => Math.random() - 0.5),
+                  answer: movie.release_date.split('-')[0]
+                };
+              case 1:
+                const otherMovies = shuffledMovies
+                  .filter((m: any) => m.id !== movie.id)
+                  .slice(0, 3)
+                  .map((m: any) => m.title);
+                return {
+                  question: `¿Cuál es el título de esta película?`,
+                  poster: movie.poster_path,
+                  options: [movie.title, ...otherMovies].sort(
+                    () => Math.random() - 0.5
+                  ),
+                  answer: movie.title
+                };
+              case 2:
+                return {
+                  question: `¿Cuál es el idioma original de esta película?`,
+                  poster: movie.poster_path,
+                  options: ['jp', 'es', 'fr', movie.original_language]
+                    .slice(0, 4)
+                    .sort(() => Math.random() - 0.5),
+                  answer: movie.original_language
+                };
+              case 3:
+                const genreName = genreMap[movie.genre_ids[0]] || 'Desconocido';
+                const otherGenres = Object.values(genreMap)
+                  .filter(g => g !== genreName)
+                  .sort(() => Math.random() - 0.5)
+                  .slice(0, 3);
+                return {
+                  question: `¿Cuál es el género principal de esta película?`,
+                  poster: movie.poster_path,
+                  options: [genreName, ...otherGenres].sort(
+                    () => Math.random() - 0.5
+                  ),
+                  answer: genreName
+                };
+              default:
+                return null;
+            }
+          };
 
-              question = {
-                question: `¿Cuál es el género principal de esta película?`,
-                poster: movie.poster_path,
-                options: [genreName, ...otherGenres].sort(
-                  () => Math.random() - 0.5
-                ), // Mezcla las opciones
-                answer: genreName // Respuesta correcta
-              };
-              break;
-            default:
-              break;
+          if (category === 'general') {
+            question = generateQuestion(questionType);
+          } else if (
+            category === 'releaseYear' &&
+            [0, 1, 2, 3].includes(questionType)
+          ) {
+            question = generateQuestion(0);
+          } else if (
+            category === 'title' &&
+            [0, 1, 2, 3].includes(questionType)
+          ) {
+            question = generateQuestion(1);
+          } else if (
+            category === 'language' &&
+            [0, 1, 2, 3].includes(questionType)
+          ) {
+            question = generateQuestion(2);
+          } else if (
+            category === 'genre' &&
+            [0, 1, 2, 3].includes(questionType)
+          ) {
+            question = generateQuestion(3);
           }
 
           if (question) {
@@ -137,12 +155,11 @@ export const TriviaScreen = ({navigation}: any) => {
     };
 
     fetchQuestions();
-  }, []);
+  }, [category]);
 
-  // Manejar el temporizador
   useEffect(() => {
     if (timeLeft === 0) {
-      handleAnswer(null); // Marcar como incorrecta si el tiempo se agota
+      handleAnswer(null);
       return;
     }
 
@@ -150,12 +167,11 @@ export const TriviaScreen = ({navigation}: any) => {
       setTimeLeft(timeLeft - 1);
     }, 1000);
 
-    return () => clearTimeout(timer); // Limpiar el temporizador al desmontar
+    return () => clearTimeout(timer);
   }, [timeLeft]);
 
   const handleAnswer = (selectedOption: string | null) => {
     const currentQuestion = questions[currentQuestionIndex];
-
     if (selectedOption === currentQuestion?.answer) {
       setScore(score + 1);
     }
@@ -165,12 +181,12 @@ export const TriviaScreen = ({navigation}: any) => {
     setTimeout(() => {
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
-        setSelectedOption(null); // Reiniciar la selección para la siguiente pregunta
-        setTimeLeft(10); // Reiniciar el temporizador
+        setSelectedOption(null);
+        setTimeLeft(10);
       } else {
         setFinished(true);
       }
-    }, 1000); // Esperar 1 segundo antes de pasar a la siguiente pregunta
+    }, 1000);
   };
 
   if (loading) {
@@ -229,8 +245,7 @@ export const TriviaScreen = ({navigation}: any) => {
               : null
           ]}
           onPress={() => handleAnswer(option)}
-          disabled={!!selectedOption} // Deshabilitar botones después de seleccionar
-        >
+          disabled={!!selectedOption}>
           <Text style={styles.optionText}>{option}</Text>
         </TouchableOpacity>
       ))}
@@ -268,13 +283,11 @@ const styles = StyleSheet.create({
   },
   loaderText: {
     marginTop: 10,
-    fontSize: 16,
-    color: '#6c757d'
+    fontSize: 16
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#343a40',
     marginBottom: 20
   },
   poster: {
@@ -285,46 +298,38 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: 18,
-    textAlign: 'center',
-    color: '#495057',
-    marginBottom: 20
+    marginBottom: 20,
+    textAlign: 'center'
   },
   optionButton: {
-    backgroundColor: '#007bff',
-    padding: 15,
+    backgroundColor: '#dee2e6',
+    padding: 12,
     borderRadius: 8,
-    marginVertical: 10,
-    width: '100%',
-    alignItems: 'center'
+    marginVertical: 6,
+    width: '100%'
   },
   correctOption: {
-    backgroundColor: '#28a745' // Verde para respuestas correctas
+    backgroundColor: '#28a745'
   },
   incorrectOption: {
-    backgroundColor: '#dc3545' // Rojo para respuestas incorrectas
+    backgroundColor: '#dc3545'
   },
   optionText: {
-    color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold'
+    textAlign: 'center'
   },
   score: {
     marginTop: 20,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#495057'
+    fontSize: 16
   },
   button: {
-    backgroundColor: '#28a745',
-    padding: 15,
-    borderRadius: 8,
     marginTop: 20,
-    width: '100%',
-    alignItems: 'center'
+    backgroundColor: '#007bff',
+    padding: 12,
+    borderRadius: 8
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold'
+    fontSize: 16
   }
 });

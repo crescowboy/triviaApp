@@ -26,28 +26,70 @@ export const HomeScreen = ({navigation}: any) => {
     <ScrollView>
       <View style={[styles.container, {marginTop: top + 20}]}>
         {/* Banner horizontal para Trivia */}
+        <Text style={styles.sectionTitle}>Selecciona una Trivia</Text>
+
+        {/* Botón principal más grande */}
         <TouchableOpacity
-          style={styles.triviaBanner}
-          onPress={() => navigation.navigate('Trivia')}>
-          <View style={styles.triviaBannerGradient}>
-            <Text style={styles.triviaBannerText}>Jugar Trivia</Text>
-          </View>
+          style={styles.mainTriviaButton}
+          onPress={() =>
+            navigation.navigate('TriviaScreen', {category: 'general'})
+          }>
+          <Text style={styles.triviaButtonText}>Trivia General</Text>
         </TouchableOpacity>
 
-        {/*Principal*/}
+        {/* Botones secundarios en pares */}
+        <View style={styles.triviaRow}>
+          <TouchableOpacity
+            style={styles.triviaButtonSmall}
+            onPress={() =>
+              navigation.navigate('TriviaScreen', {category: 'releaseYear'})
+            }>
+            <Text style={styles.triviaButtonText}>Año de Estreno</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.triviaButtonSmall}
+            onPress={() =>
+              navigation.navigate('TriviaScreen', {category: 'title'})
+            }>
+            <Text style={styles.triviaButtonText}>Título</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.triviaRow}>
+          <TouchableOpacity
+            style={styles.triviaButtonSmall}
+            onPress={() =>
+              navigation.navigate('TriviaScreen', {category: 'language'})
+            }>
+            <Text style={styles.triviaButtonText}>Idioma Original</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.triviaButtonSmall}
+            onPress={() =>
+              navigation.navigate('TriviaScreen', {category: 'genre'})
+            }>
+            <Text style={styles.triviaButtonText}>Género</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Principal */}
+        <Text style={styles.sectionTitle}>Peliculas</Text>
         <PosterCarousel movies={nowPlaying} />
-        {/*Populares*/}
+
+        {/* Populares */}
         <HorizontalCarousel
           movies={popular}
           title="Populares"
           loadNextPage={popularNextPage}
         />
 
-        {/*Top rated*/}
+        {/* Top rated */}
         <HorizontalCarousel movies={topRated} title="Mejor calificadas" />
 
-        {/*Proximamente*/}
-        <HorizontalCarousel movies={upComing} title="Proximamente" />
+        {/* Próximamente */}
+        <HorizontalCarousel movies={upComing} title="Próximamente" />
       </View>
     </ScrollView>
   );
@@ -57,28 +99,41 @@ const styles = StyleSheet.create({
   container: {
     paddingBottom: 30
   },
-  triviaBanner: {
-    height: 150,
-    marginHorizontal: 20,
-    marginBottom: 20,
-    borderRadius: 10,
-    overflow: 'hidden'
-  },
-  triviaBannerGradient: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#007bff',
-    borderRadius: 10,
-    position: 'relative',
-    background: 'linear-gradient(to right, #007bff, #00c6ff)'
-  },
-  triviaBannerText: {
-    color: '#fff',
+  sectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: {width: 1, height: 1},
-    textShadowRadius: 5
+    color: '#343a40',
+    marginHorizontal: 20,
+    marginBottom: 10,
+    textAlign: 'center' // ✅ Línea añadida para centrar el título
+  },
+  mainTriviaButton: {
+    backgroundColor: '#007bff',
+    paddingVertical: 30, // Más alto
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginHorizontal: 20,
+    marginBottom: 15,
+    alignItems: 'center'
+  },
+  triviaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 20,
+    marginBottom: 10
+  },
+  triviaButtonSmall: {
+    backgroundColor: '#007bff',
+    paddingVertical: 20, // Un poco más alto
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    flex: 0.48,
+    alignItems: 'center'
+  },
+  triviaButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center'
   }
 });
