@@ -11,12 +11,25 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {PosterCarousel} from '../../components/movies/PosterCarousel';
 import {HorizontalCarousel} from '../../components/movies/HorizontalCarousel';
 import {FullScreenLoaders} from '../../components/loaders/FullScreenLoaders';
+import {useAuth} from '../../../core/context/AuthContext'; // Importar el contexto de autenticación
 
 export const HomeScreen = ({navigation}: any) => {
   const {top} = useSafeAreaInsets();
+  const {isAuthenticated} = useAuth(); // Obtener el estado de autenticación
 
   const {isLoding, nowPlaying, popular, topRated, upComing, popularNextPage} =
     useMovies();
+
+  const handleTriviaNavigation = (category: string) => {
+    console.log('Estado de autenticación:', isAuthenticated); // Verificar el estado
+    if (!isAuthenticated) {
+      // Si no está autenticado, redirigir a AuthScreen
+      navigation.navigate('AuthScreen', {redirectTo: 'TriviaScreen', category});
+    } else {
+      // Si está autenticado, navegar directamente a TriviaScreen
+      navigation.navigate('TriviaScreen', {category});
+    }
+  };
 
   if (isLoding) {
     return <FullScreenLoaders />;
@@ -25,33 +38,24 @@ export const HomeScreen = ({navigation}: any) => {
   return (
     <ScrollView>
       <View style={[styles.container, {marginTop: top + 20}]}>
-        {/* Banner horizontal para Trivia */}
         <Text style={styles.sectionTitle}>Selecciona una Trivia</Text>
 
-        {/* Botón principal más grande */}
         <TouchableOpacity
           style={styles.mainTriviaButton}
-          onPress={() =>
-            navigation.navigate('TriviaScreen', {category: 'general'})
-          }>
+          onPress={() => handleTriviaNavigation('general')}>
           <Text style={styles.triviaButtonText}>Trivia General</Text>
         </TouchableOpacity>
 
-        {/* Botones secundarios en pares */}
         <View style={styles.triviaRow}>
           <TouchableOpacity
             style={styles.triviaButtonSmall}
-            onPress={() =>
-              navigation.navigate('TriviaScreen', {category: 'releaseYear'})
-            }>
+            onPress={() => handleTriviaNavigation('releaseYear')}>
             <Text style={styles.triviaButtonText}>Año de Estreno</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.triviaButtonSmall}
-            onPress={() =>
-              navigation.navigate('TriviaScreen', {category: 'title'})
-            }>
+            onPress={() => handleTriviaNavigation('title')}>
             <Text style={styles.triviaButtonText}>Título</Text>
           </TouchableOpacity>
         </View>
@@ -59,36 +63,32 @@ export const HomeScreen = ({navigation}: any) => {
         <View style={styles.triviaRow}>
           <TouchableOpacity
             style={styles.triviaButtonSmall}
-            onPress={() =>
-              navigation.navigate('TriviaScreen', {category: 'language'})
-            }>
+            onPress={() => handleTriviaNavigation('language')}>
             <Text style={styles.triviaButtonText}>Idioma Original</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.triviaButtonSmall}
-            onPress={() =>
-              navigation.navigate('TriviaScreen', {category: 'genre'})
-            }>
+            onPress={() => handleTriviaNavigation('genre')}>
             <Text style={styles.triviaButtonText}>Género</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Principal */}
-        <Text style={styles.sectionTitle}>Peliculas</Text>
+        <Text style={styles.sectionTitle}>Películas</Text>
         <PosterCarousel movies={nowPlaying} />
 
-        {/* Populares */}
+        <TouchableOpacity
+          style={styles.authButton}
+          onPress={() => navigation.navigate('AuthScreen')}>
+          <Text style={styles.triviaButtonText}>Ir a Login/Register</Text>
+        </TouchableOpacity>
+
         <HorizontalCarousel
           movies={popular}
           title="Populares"
           loadNextPage={popularNextPage}
         />
-
-        {/* Top rated */}
         <HorizontalCarousel movies={topRated} title="Mejor calificadas" />
-
-        {/* Próximamente */}
         <HorizontalCarousel movies={upComing} title="Próximamente" />
       </View>
     </ScrollView>
@@ -105,11 +105,11 @@ const styles = StyleSheet.create({
     color: '#343a40',
     marginHorizontal: 20,
     marginBottom: 10,
-    textAlign: 'center' // ✅ Línea añadida para centrar el título
+    textAlign: 'center'
   },
   mainTriviaButton: {
     backgroundColor: '#007bff',
-    paddingVertical: 30, // Más alto
+    paddingVertical: 30,
     paddingHorizontal: 20,
     borderRadius: 8,
     marginHorizontal: 20,
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   },
   triviaButtonSmall: {
     backgroundColor: '#007bff',
-    paddingVertical: 20, // Un poco más alto
+    paddingVertical: 20,
     paddingHorizontal: 10,
     borderRadius: 8,
     flex: 0.48,
@@ -135,5 +135,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center'
+  },
+  authButton: {
+    backgroundColor: '#28a745',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    alignItems: 'center'
   }
 });
